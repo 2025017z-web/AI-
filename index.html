@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Dungeon Depths - アクションローグライク</title>
+
+    <!-- ファビコン (SVG Data URI) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M30 70 L70 30 M60 30 L70 30 L70 40 M30 65 L35 70 L25 80 L20 75 Z' stroke='%23fbbf24' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><circle cx='65' cy='35' r='5' fill='%23c084fc'/></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tone.js (Sound Effects) -->
@@ -68,7 +72,7 @@
             <!-- HP Bar -->
             <div class="w-28 md:w-44">
                 <div class="flex justify-between text-xs mb-1">
-                    <span class="text-red-400 font-bold"><i class="fa-solid font-heart mr-1"></i>HP</span>
+                    <span class="text-red-400 font-bold"><i class="fa-solid fa-heart mr-1"></i>HP</span>
                     <span id="hp-text" class="text-slate-300">100/100</span>
                 </div>
                 <div class="w-full bg-slate-950 h-3 rounded-full border border-slate-700 overflow-hidden">
@@ -117,7 +121,7 @@
                 DUNGEON<br>DEPTHS
             </h1>
             <p class="text-slate-400 mb-8 max-w-md text-sm md:text-base">
-                入る度に構造が変わる無限のダンジョン。モンスターを倒して装備を厳選し、真の深層を目指せ！
+                入る度に構造が変わる無限のダンジョン。モンスターを倒して装備や強力なスキルを厳選し、真の深層を目指せ！
             </p>
             <div class="flex flex-col sm:flex-row gap-4 w-full max-w-xs">
                 <button id="btn-start" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold py-3 px-6 rounded-xl text-lg shadow-lg shadow-amber-900/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
@@ -148,10 +152,10 @@
 
     <!-- Action Bar / Mobile Controls -->
     <footer class="w-full max-w-5xl mx-auto bg-slate-900/90 border-2 border-slate-700 rounded-xl p-3 flex justify-between items-center gap-2 backdrop-blur z-10">
-        <!-- On-screen controls (Touch / Mobile focus) -->
+        <!-- Key controls hint -->
         <div class="flex gap-2">
             <div class="text-xs text-slate-400 hidden sm:block">
-                [WASD/矢印] 移動 | [Space/Click] 攻撃 | [Shift] ダッシュ | [E] スキル
+                [WASD/矢印] 移動 | [Space/Click] 攻撃 | [Shift] 回避 | [E] スキル発動
             </div>
         </div>
 
@@ -160,8 +164,8 @@
             <button id="btn-dash" class="relative bg-cyan-900/50 hover:bg-cyan-800/80 active:bg-cyan-700 border border-cyan-500/50 text-cyan-300 font-bold px-4 py-2 rounded-xl flex items-center justify-center min-w-[70px]">
                 <i class="fa-solid fa-bolt mr-1"></i>回避
             </button>
-            <button id="btn-skill" class="relative bg-purple-900/50 hover:bg-purple-800/80 active:bg-purple-700 border border-purple-500/50 text-purple-300 font-bold px-4 py-2 rounded-xl flex items-center justify-center min-w-[70px]">
-                <i class="fa-solid fa-burst mr-1"></i>Skill
+            <button id="btn-skill" class="relative bg-purple-900/50 hover:bg-purple-800/80 active:bg-purple-700 border border-purple-500/50 text-purple-300 font-bold px-4 py-2 rounded-xl flex items-center justify-center min-w-[90px]">
+                <i id="skill-icon" class="fa-solid fa-wand-magic-sparkles mr-1"></i><span id="skill-btn-label">Skill</span>
             </button>
             <button id="btn-attack" class="bg-gradient-to-r from-red-600 to-amber-600 active:from-red-700 active:to-amber-700 text-white font-black px-6 py-2 rounded-xl shadow-lg shadow-red-900/30 flex items-center justify-center min-w-[90px]">
                 <i class="fa-solid fa-hand-fist mr-1 text-lg"></i>攻撃
@@ -173,7 +177,7 @@
     <div id="modal-inventory" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
-                <h3 class="text-lg font-bold text-amber-400 flex items-center"><i class="fa-solid fa-briefcase mr-2"></i>装備 & インベンタリ</h3>
+                <h3 class="text-lg font-bold text-amber-400 flex items-center"><i class="fa-solid fa-briefcase mr-2"></i>装備 & スキル設定</h3>
                 <button id="btn-close-inv" class="text-slate-400 hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -191,6 +195,9 @@
                         <div id="slot-accessory" class="p-3 rounded-lg border bg-slate-900 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 border-slate-700">
                             <span class="text-slate-500 text-sm">装飾品なし</span>
                         </div>
+                        <div id="slot-skill" class="p-3 rounded-lg border bg-purple-950/40 flex items-center justify-between cursor-pointer hover:bg-purple-900/40 border-purple-800/60">
+                            <span class="text-purple-400 text-sm">スキル: 初期旋風</span>
+                        </div>
                     </div>
 
                     <!-- Player Stats Detail -->
@@ -199,14 +206,13 @@
                         <div class="flex justify-between"><span class="text-slate-400">防御力:</span><span id="stat-def" class="font-bold text-blue-400">0</span></div>
                         <div class="flex justify-between"><span class="text-slate-400">最大HP:</span><span id="stat-hp" class="font-bold text-red-400">100</span></div>
                         <div class="flex justify-between"><span class="text-slate-400">クリティカル率:</span><span id="stat-crit" class="font-bold text-cyan-400">5%</span></div>
-                        <div class="flex justify-between"><span class="text-slate-400">移動速度:</span><span id="stat-spd" class="font-bold text-emerald-400">100%</span></div>
                     </div>
                 </div>
 
                 <!-- Bag Items -->
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 flex flex-col">
                     <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">所持品 (タップで装備)</h4>
-                    <div id="inventory-list" class="space-y-2 flex-1 overflow-y-auto max-h-[250px] pr-1">
+                    <div id="inventory-list" class="space-y-2 flex-1 overflow-y-auto max-h-[260px] pr-1">
                         <!-- Items rendered here dynamically -->
                     </div>
                 </div>
@@ -302,6 +308,28 @@
             LEGENDARY: { name: 'レジェンダリー', color: '#fbbf24', class: 'rarity-legendary', bgClass: 'bg-rarity-legendary', multiplier: 2.6 }
         };
 
+        // Skill Masters Data
+        const SKILL_TYPES = [
+            { id: 'whirlwind', name: '回転斬り', icon: 'fa-dharmachakra', color: '#c084fc', baseDmg: 2.0, baseCd: 150, radius: 90, desc: '周囲の敵をまとめて薙ぎ払う' },
+            { id: 'fireball', name: '爆炎破', icon: 'fa-fire', color: '#f97316', baseDmg: 2.8, baseCd: 180, radius: 110, desc: '高火力の炎で周囲の敵を焼き尽くす' },
+            { id: 'frost_nova', name: '氷結波動', icon: 'fa-snowflake', color: '#38bdf8', baseDmg: 1.8, baseCd: 140, radius: 100, desc: '凍てつく波動で敵を大きく弾き飛ばす' },
+            { id: 'thunder', name: '落雷の儀', icon: 'fa-bolt-lightning', color: '#facc15', baseDmg: 3.5, baseCd: 210, radius: 130, desc: '天からの落雷で大ダメージを与える' },
+            { id: 'holy_burst', name: '聖光演武', icon: 'fa-sun', color: '#fef08a', baseDmg: 1.6, baseCd: 200, radius: 90, heal: 0.15, desc: '聖なる光で敵に撃破を与えつつHP回復' },
+            { id: 'dark_void', name: '暗黒の渦', icon: 'fa-atom', color: '#a855f7', baseDmg: 2.4, baseCd: 160, radius: 120, pull: true, desc: '周りの敵を中心に強力に吸い寄せる' }
+        ];
+
+        // Default Starting Skill
+        const DEFAULT_SKILL = {
+            id: 'default_skill',
+            name: '回転斬り',
+            type: 'skill',
+            skillType: 'whirlwind',
+            rarity: RARITY.COMMON,
+            icon: 'fa-dharmachakra',
+            stats: { dmgMult: 2.0, cooldown: 150, radius: 90, color: '#c084fc' },
+            desc: '周囲の敵をまとめて薙ぎ払う'
+        };
+
         // Permanent Upgrades Definition
         const PERMA_UPGRADES = [
             { id: 'hp', name: '生命力強化', desc: '最大HPが +15 増加', cost: 10, costMult: 1.5, level: 0, max: 20 },
@@ -369,13 +397,14 @@
             dashTimer: 0,
             skillCooldown: 0,
             attackTimer: 0,
-            invincibleTimer: 0, // 無敵フレームタイマー
+            invincibleTimer: 0, // 無敵フレーム
             
             // Equipment
             equipment: {
                 weapon: null,
                 armor: null,
-                accessory: null
+                accessory: null,
+                skill: null // 装備中のスキル
             },
             inventory: [],
 
@@ -402,6 +431,9 @@
                 if (this.equipment.weapon) extra += this.equipment.weapon.stats.crit || 0;
                 if (this.equipment.accessory) extra += this.equipment.accessory.stats.crit || 0;
                 return this.baseCrit + extra;
+            },
+            get currentSkill() {
+                return this.equipment.skill || DEFAULT_SKILL;
             }
         };
 
@@ -410,7 +442,6 @@
 
         // --- Procedural Generation (Dungeon) ---
         function generateDungeon() {
-            // Fill with walls
             gameState.map = Array(MAP_HEIGHT).fill(0).map(() => Array(MAP_WIDTH).fill(1));
             gameState.rooms = [];
             gameState.enemies = [];
@@ -426,7 +457,6 @@
                 const x = Math.floor(Math.random() * (MAP_WIDTH - w - 2)) + 1;
                 const y = Math.floor(Math.random() * (MAP_HEIGHT - h - 2)) + 1;
 
-                // Check overlap
                 let overlap = false;
                 for (let r of gameState.rooms) {
                     if (x < r.x + r.w + 1 && x + w + 1 > r.x && y < r.y + r.h + 1 && y + h + 1 > r.y) {
@@ -439,16 +469,14 @@
                     const room = { x, y, w, h, cx: Math.floor(x + w / 2), cy: Math.floor(y + h / 2) };
                     gameState.rooms.push(room);
 
-                    // Carve Room
                     for (let ry = y; ry < y + h; ry++) {
                         for (let rx = x; rx < x + w; rx++) {
-                            gameState.map[ry][rx] = 0; // Floor
+                            gameState.map[ry][rx] = 0;
                         }
                     }
                 }
             }
 
-            // Connect Rooms with Corridors
             for (let i = 0; i < gameState.rooms.length - 1; i++) {
                 const r1 = gameState.rooms[i];
                 const r2 = gameState.rooms[i + 1];
@@ -466,21 +494,17 @@
                 }
             }
 
-            // Spawn Player in First Room
             const startRoom = gameState.rooms[0];
             player.x = (startRoom.cx + 0.5) * TILE_SIZE;
             player.y = (startRoom.cy + 0.5) * TILE_SIZE;
             player.vx = 0;
             player.vy = 0;
 
-            // Spawn Exit Stairs in Last Room
             const exitRoom = gameState.rooms[gameState.rooms.length - 1];
-            gameState.map[exitRoom.cy][exitRoom.cx] = 2; // Stair Tile
+            gameState.map[exitRoom.cy][exitRoom.cx] = 2;
 
-            // Spawn Enemies & Chests in other rooms
             for (let i = 1; i < gameState.rooms.length; i++) {
                 const rm = gameState.rooms[i];
-                // Spawn Enemies
                 const enemyCount = 1 + Math.floor(Math.random() * (2 + gameState.floor * 0.5));
                 for (let e = 0; e < enemyCount; e++) {
                     const ex = (rm.x + 1 + Math.random() * (rm.w - 2)) * TILE_SIZE;
@@ -488,8 +512,7 @@
                     spawnEnemy(ex, ey);
                 }
 
-                // Chest Chance
-                if (Math.random() < 0.6) {
+                if (Math.random() < 0.7) {
                     const cx = (rm.x + 1 + Math.floor(Math.random() * (rm.w - 2))) * TILE_SIZE + TILE_SIZE/2;
                     const cy = (rm.y + 1 + Math.floor(Math.random() * (rm.h - 2))) * TILE_SIZE + TILE_SIZE/2;
                     gameState.items.push({
@@ -509,7 +532,6 @@
                 { name: 'オーク', color: '#f97316', hp: 90, atk: 18, speed: 1.2, size: 16, exp: 45 }
             ];
 
-            // Scaling with Floor
             let typeIdx = 0;
             const rand = Math.random();
             if (gameState.floor >= 3 && rand > 0.4) typeIdx = 1;
@@ -529,22 +551,52 @@
             });
         }
 
-        // --- Item Generation ---
+        // --- Item & Skill Generation ---
         function generateLoot(floor) {
-            const rarities = [RARITY.COMMON, RARITY.RARE, RARITY.EPIC, RARITY.LEGENDARY];
             const roll = Math.random();
             let rarity = RARITY.COMMON;
-            if (roll > 0.65) rarity = RARITY.RARE;
-            if (roll > 0.88) rarity = RARITY.EPIC;
-            if (roll > 0.97) rarity = RARITY.LEGENDARY;
+            if (roll > 0.60) rarity = RARITY.RARE;
+            if (roll > 0.85) rarity = RARITY.EPIC;
+            if (roll > 0.96) rarity = RARITY.LEGENDARY;
 
-            const types = ['weapon', 'armor', 'accessory'];
+            // 装備種別：武器・防具・装飾品・スキル
+            const types = ['weapon', 'armor', 'accessory', 'skill'];
             const type = types[Math.floor(Math.random() * types.length)];
 
             let name = '';
             let stats = {};
+            const mult = rarity.multiplier * (1 + floor * 0.12);
 
-            const mult = rarity.multiplier * (1 + floor * 0.15);
+            if (type === 'skill') {
+                const skMaster = SKILL_TYPES[Math.floor(Math.random() * SKILL_TYPES.length)];
+                name = `${rarity.name} ${skMaster.name}`;
+                
+                // レア度が高いほどクールダウン短縮、威力・範囲UP
+                const dmgMult = Number((skMaster.baseDmg * mult).toFixed(1));
+                const cdReduction = (rarity.multiplier - 1) * 0.25;
+                const cooldown = Math.max(45, Math.floor(skMaster.baseCd * (1 - cdReduction)));
+                const radius = Math.floor(skMaster.radius * (1 + (rarity.multiplier - 1) * 0.2));
+
+                stats = {
+                    dmgMult,
+                    cooldown,
+                    radius,
+                    color: skMaster.color
+                };
+
+                return {
+                    id: Date.now() + Math.random(),
+                    name,
+                    type,
+                    skillType: skMaster.id,
+                    rarity,
+                    icon: skMaster.icon,
+                    stats,
+                    desc: skMaster.desc,
+                    heal: skMaster.heal,
+                    pull: skMaster.pull
+                };
+            }
 
             if (type === 'weapon') {
                 const names = ['ショートソード', 'バトルアックス', 'ルーンブレイド', 'ドラゴンスレイヤー'];
@@ -594,11 +646,9 @@
 
         function triggerAttack() {
             if (player.attackTimer > 0 || !gameState.running) return;
-            player.attackTimer = 12; // Frames
+            player.attackTimer = 12;
 
             Sound.playHit();
-
-            // Attack Arc/Area
             const attackRange = 45;
 
             gameState.enemies.forEach(e => {
@@ -607,84 +657,110 @@
                 const dist = Math.hypot(dx, dy);
 
                 if (dist < attackRange + e.size) {
-                    // Calculate Damage
                     let isCrit = Math.random() * 100 < player.totalCrit;
                     let dmg = Math.floor(player.totalAtk * (isCrit ? 1.8 : 1.0) * (0.9 + Math.random() * 0.2));
                     
                     e.hp -= dmg;
                     e.hitTimer = 10;
-                    // Knockback
+
                     const angle = Math.atan2(dy, dx);
                     e.vx += Math.cos(angle) * 6;
                     e.vy += Math.sin(angle) * 6;
 
-                    // Particle & Toast
                     addDamageNumber(e.x, e.y - 10, dmg, isCrit);
                     createBloodParticles(e.x, e.y, e.color);
 
                     if (isCrit) Sound.playCrit();
-
-                    // Enemy Death
-                    if (e.hp <= 0) {
-                        onEnemyKill(e);
-                    }
+                    if (e.hp <= 0) onEnemyKill(e);
                 }
             });
         }
 
         function triggerDash() {
             if (player.dashCooldown > 0 || !gameState.running) return;
-            player.dashCooldown = 60; // 1s
+            player.dashCooldown = 60;
             player.dashTimer = 8;
             Sound.playPickup();
         }
 
+        // 多彩なスキル発動処理
         function triggerSkill() {
             if (player.skillCooldown > 0 || !gameState.running) return;
-            player.skillCooldown = 180; // 3s
+
+            const sk = player.currentSkill;
+            const cd = sk.stats.cooldown || 150;
+            const radius = sk.stats.radius || 100;
+            const dmgMult = sk.stats.dmgMult || 2.0;
+            const color = sk.stats.color || '#c084fc';
+
+            player.skillCooldown = cd;
             Sound.playSkill();
 
-            // Radial Whirlwind Attack
-            createSkillEffect(player.x, player.y);
+            // HP回復スキル（聖光）
+            if (sk.heal) {
+                const healAmt = Math.floor(player.totalMaxHp * sk.heal);
+                player.hp = Math.min(player.totalMaxHp, player.hp + healAmt);
+                addDamageNumber(player.x, player.y - 20, `+${healAmt} HP`, true);
+            }
+
+            // スキルエフェクト生成
+            createSkillParticleEffect(player.x, player.y, radius, color, sk.skillType);
 
             gameState.enemies.forEach(e => {
-                const dist = Math.hypot(e.x - player.x, e.y - player.y);
-                if (dist < 90) {
-                    let dmg = Math.floor(player.totalAtk * 2.2);
+                const dx = e.x - player.x;
+                const dy = e.y - player.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < radius + e.size) {
+                    let dmg = Math.floor(player.totalAtk * dmgMult);
                     e.hp -= dmg;
-                    e.hitTimer = 10;
+                    e.hitTimer = 12;
+
+                    // 暗黒の渦：引き寄せ
+                    if (sk.pull) {
+                        const angle = Math.atan2(player.y - e.y, player.x - e.x);
+                        e.vx += Math.cos(angle) * 9;
+                        e.vy += Math.sin(angle) * 9;
+                    } else {
+                        // 通常ノックバック
+                        const angle = Math.atan2(dy, dx);
+                        e.vx += Math.cos(angle) * (sk.skillType === 'frost_nova' ? 12 : 7);
+                        e.vy += Math.sin(angle) * (sk.skillType === 'frost_nova' ? 12 : 7);
+                    }
+
                     addDamageNumber(e.x, e.y - 10, dmg, true);
-                    createBloodParticles(e.x, e.y, e.color);
+                    createBloodParticles(e.x, e.y, sk.stats.color || e.color);
+
                     if (e.hp <= 0) onEnemyKill(e);
                 }
             });
+
+            showToast(`スキル発動: ${sk.name}!`, sk.rarity.class);
         }
 
         function onEnemyKill(enemy) {
             gameState.kills++;
-            // Gain EXP
             let expGained = Math.floor(enemy.exp * (1 + gameState.upgrades.exp * 0.1));
             player.exp += expGained;
+
             if (player.exp >= player.nextExp) {
                 player.level++;
                 player.exp -= player.nextExp;
                 player.nextExp = Math.floor(player.nextExp * 1.4);
-                player.hp = player.totalMaxHp; // Full Heal on Level Up
+                player.hp = player.totalMaxHp;
                 showToast(`LEVEL UP! Lv.${player.level}`, 'text-amber-400');
                 Sound.playLevelUp();
             }
 
-            // Drop Souls
             const soulCount = 1 + Math.floor(Math.random() * 3);
             gameState.souls += soulCount;
             gameState.metaSouls += soulCount;
 
-            // Remove enemy
             gameState.enemies = gameState.enemies.filter(e => e !== enemy);
             updateUI();
         }
 
-        // --- Visual Effects & Floating Numbers ---
+        // --- Visual Effects ---
         function addDamageNumber(x, y, text, isCrit = false) {
             gameState.damageNumbers.push({
                 x, y, text, isCrit,
@@ -708,16 +784,18 @@
             }
         }
 
-        function createSkillEffect(x, y) {
-            for (let i = 0; i < 24; i++) {
-                const angle = (Math.PI * 2 / 24) * i;
+        function createSkillParticleEffect(x, y, radius, color, type) {
+            const count = 30;
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 / count) * i;
+                const spd = (radius / 15) * (0.8 + Math.random() * 0.4);
                 gameState.particles.push({
                     x, y,
-                    vx: Math.cos(angle) * 7,
-                    vy: Math.sin(angle) * 7,
-                    color: '#c084fc',
-                    life: 12,
-                    size: 4
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
+                    color: color,
+                    life: 15,
+                    size: type === 'fireball' ? 6 : 4
                 });
             }
         }
@@ -738,14 +816,12 @@
         function update() {
             if (!gameState.running) return;
 
-            // Cooldowns & Timers
             if (player.dashCooldown > 0) player.dashCooldown--;
             if (player.dashTimer > 0) player.dashTimer--;
             if (player.skillCooldown > 0) player.skillCooldown--;
             if (player.attackTimer > 0) player.attackTimer--;
             if (player.invincibleTimer > 0) player.invincibleTimer--;
 
-            // Player Input Movement Direction
             let dx = 0;
             let dy = 0;
             if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
@@ -761,25 +837,21 @@
             let speed = player.speed;
             if (player.dashTimer > 0) speed *= 2.8;
 
-            // 通常移動ベクトルとノックバックベクトルを合成
             let moveX = player.vx + dx * speed;
             let moveY = player.vy + dy * speed;
 
-            // X軸移動と壁衝突判定（壁に埋まらないように速度リセット）
             if (!checkTileCollision(player.x + moveX, player.y, player.radius)) {
                 player.x += moveX;
             } else {
                 player.vx = 0;
             }
 
-            // Y軸移動と壁衝突判定
             if (!checkTileCollision(player.x, player.y + moveY, player.radius)) {
                 player.y += moveY;
             } else {
                 player.vy = 0;
             }
 
-            // ノックバック速度の減衰
             player.vx *= 0.85;
             player.vy *= 0.85;
 
@@ -811,7 +883,6 @@
             gameState.enemies.forEach(e => {
                 if (e.hitTimer > 0) e.hitTimer--;
 
-                // Move towards player & Apply Knockback
                 const edx = player.x - e.x;
                 const edy = player.y - e.y;
                 const dist = Math.hypot(edx, edy);
@@ -824,31 +895,26 @@
                     eMoveY += (edy / dist) * e.speed;
                 }
 
-                // 敵のX軸移動＆壁衝突判定（ノックバックで壁に埋まるのを防ぐ）
                 if (!checkTileCollision(e.x + eMoveX, e.y, e.size)) {
                     e.x += eMoveX;
                 } else {
                     e.vx = 0;
                 }
 
-                // 敵のY軸移動＆壁衝突判定
                 if (!checkTileCollision(e.x, e.y + eMoveY, e.size)) {
                     e.y += eMoveY;
                 } else {
                     e.vy = 0;
                 }
 
-                // 敵のノックバック減衰
                 e.vx *= 0.8;
                 e.vy *= 0.8;
 
-                // Damage Player with Knockback & Invincibility Frame
                 if (dist < player.radius + e.size && player.dashTimer <= 0 && player.invincibleTimer <= 0) {
                     let takenDmg = Math.max(1, e.atk - player.totalDef);
                     player.hp -= takenDmg;
-                    player.invincibleTimer = 45; // 約0.75秒の無敵時間
+                    player.invincibleTimer = 45;
 
-                    // プレイヤーのノックバック処理
                     const kbAngle = Math.atan2(edy, edx);
                     player.vx = Math.cos(kbAngle) * 8;
                     player.vy = Math.sin(kbAngle) * 8;
@@ -863,7 +929,6 @@
                 }
             });
 
-            // Update Particles
             gameState.particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -871,14 +936,12 @@
             });
             gameState.particles = gameState.particles.filter(p => p.life > 0);
 
-            // Update Damage Numbers
             gameState.damageNumbers.forEach(d => {
                 d.y += d.vy;
                 d.life--;
             });
             gameState.damageNumbers = gameState.damageNumbers.filter(d => d.life > 0);
 
-            // Update Camera Focus
             gameState.camera.x = player.x - canvas.width / 2;
             gameState.camera.y = player.y - canvas.height / 2;
 
@@ -908,7 +971,7 @@
             ctx.save();
             ctx.translate(-Math.floor(gameState.camera.x), -Math.floor(gameState.camera.y));
 
-            // Render Map Tiles with Quality Textures
+            // Render Map
             if (gameState.map && gameState.map.length > 0) {
                 for (let y = 0; y < MAP_HEIGHT; y++) {
                     if (!gameState.map[y]) continue;
@@ -918,7 +981,6 @@
                         const py = y * TILE_SIZE;
 
                         if (tile === 1) {
-                            // Wall Texture (石レンガ風)
                             ctx.fillStyle = '#1e293b';
                             ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
                             ctx.fillStyle = '#334155';
@@ -927,13 +989,11 @@
                             ctx.lineWidth = 1;
                             ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
                         } else if (tile === 0) {
-                            // Floor Texture (石畳風)
                             ctx.fillStyle = '#0f172a';
                             ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
                             ctx.strokeStyle = '#1e293b';
                             ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
                         } else if (tile === 2) {
-                            // Stairs Texture (光るポータル風階段)
                             ctx.fillStyle = '#0284c7';
                             ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
                             ctx.strokeStyle = '#38bdf8';
@@ -947,16 +1007,14 @@
                 }
             }
 
-            // Render Items/Chests (光沢と影を追加)
+            // Render Items/Chests
             gameState.items.forEach(item => {
                 if (item.type === 'chest') {
-                    // Shadow
                     ctx.fillStyle = 'rgba(0,0,0,0.4)';
                     ctx.beginPath();
                     ctx.ellipse(item.x, item.y + 8, 12, 6, 0, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Chest Body
                     ctx.fillStyle = item.opened ? '#475569' : '#f59e0b';
                     ctx.fillRect(item.x - 10, item.y - 8, 20, 16);
                     ctx.fillStyle = item.opened ? '#334155' : '#d97706';
@@ -965,7 +1023,6 @@
                     ctx.lineWidth = 1.5;
                     ctx.strokeRect(item.x - 10, item.y - 8, 20, 16);
 
-                    // Keyhole highlight
                     if (!item.opened) {
                         ctx.fillStyle = '#fef08a';
                         ctx.fillRect(item.x - 2, item.y - 1, 4, 4);
@@ -973,15 +1030,13 @@
                 }
             });
 
-            // Render Enemies (グラデーション＋影)
+            // Render Enemies
             gameState.enemies.forEach(e => {
-                // Shadow
                 ctx.fillStyle = 'rgba(0,0,0,0.4)';
                 ctx.beginPath();
                 ctx.ellipse(e.x, e.y + e.size * 0.7, e.size, e.size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Enemy Body
                 ctx.fillStyle = e.hitTimer > 0 ? '#ffffff' : e.color;
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
@@ -990,7 +1045,6 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // HP Bar for Enemy
                 if (e.hp < e.maxHp) {
                     ctx.fillStyle = '#1e293b';
                     ctx.fillRect(e.x - 12, e.y - e.size - 8, 24, 4);
@@ -999,17 +1053,14 @@
                 }
             });
 
-            // Render Player (無敵時点滅 + 影 + 光沢)
+            // Render Player
             if (player.hp > 0) {
-                // 点滅フラッシュ処理（無敵時間中）
                 if (player.invincibleTimer <= 0 || Math.floor(player.invincibleTimer / 4) % 2 === 0) {
-                    // Shadow
                     ctx.fillStyle = 'rgba(0,0,0,0.4)';
                     ctx.beginPath();
                     ctx.ellipse(player.x, player.y + player.radius * 0.7, player.radius, player.radius * 0.4, 0, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Dash Trail Effect
                     if (player.dashTimer > 0) {
                         ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
                         ctx.beginPath();
@@ -1017,7 +1068,6 @@
                         ctx.fill();
                     }
 
-                    // Player Body
                     ctx.fillStyle = '#38bdf8';
                     ctx.beginPath();
                     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
@@ -1026,14 +1076,12 @@
                     ctx.lineWidth = 2;
                     ctx.stroke();
 
-                    // Center Highlight
                     ctx.fillStyle = '#e0f2fe';
                     ctx.beginPath();
                     ctx.arc(player.x - 3, player.y - 3, 3, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
-                // Weapon Swipe Attack Effect
                 if (player.attackTimer > 0) {
                     ctx.strokeStyle = '#f59e0b';
                     ctx.lineWidth = 3;
@@ -1078,6 +1126,13 @@
 
             document.getElementById('floor-display').innerText = `B${gameState.floor}F`;
             document.getElementById('souls-display').innerText = gameState.souls;
+
+            // スキルボタンラベルの更新
+            const sk = player.currentSkill;
+            const btnLabel = document.getElementById('skill-btn-label');
+            const btnIcon = document.getElementById('skill-icon');
+            if (btnLabel) btnLabel.innerText = player.skillCooldown > 0 ? `${Math.ceil(player.skillCooldown/60)}s` : sk.name;
+            if (btnIcon && sk.icon) btnIcon.className = `fa-solid ${sk.icon} mr-1`;
         }
 
         function updateInventoryBadge() {
@@ -1102,14 +1157,19 @@
                 const el = document.createElement('div');
                 el.className = `p-2.5 rounded-lg border ${item.rarity.bgClass} ${item.rarity.class} border-slate-700 flex justify-between items-center cursor-pointer hover:border-slate-500 transition-all text-xs`;
                 
-                let statText = Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}:${v}`).join(' ');
+                let statText = item.type === 'skill'
+                    ? `倍率:${item.stats.dmgMult}x CD:${Math.round(item.stats.cooldown/60*10)/10}s`
+                    : Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}:${v}`).join(' ');
 
                 el.innerHTML = `
                     <div>
-                        <div class="font-bold">${item.name}</div>
+                        <div class="font-bold flex items-center gap-1">
+                            ${item.icon ? `<i class="fa-solid ${item.icon}"></i>` : ''}
+                            ${item.name}
+                        </div>
                         <div class="text-[10px] text-slate-400">${statText}</div>
                     </div>
-                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded text-[10px]">装備</button>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[10px]">装備</button>
                 `;
 
                 el.addEventListener('click', () => {
@@ -1124,6 +1184,7 @@
             updateSlotView('slot-weapon', player.equipment.weapon, '武器');
             updateSlotView('slot-armor', player.equipment.armor, '防具');
             updateSlotView('slot-accessory', player.equipment.accessory, '装飾品');
+            updateSkillSlotView('slot-skill', player.equipment.skill);
 
             // Update Stats View
             document.getElementById('stat-atk').innerText = player.totalAtk;
@@ -1149,8 +1210,28 @@
             }
         }
 
+        function updateSkillSlotView(slotId, item) {
+            const slot = document.getElementById(slotId);
+            const sk = item || DEFAULT_SKILL;
+            slot.className = `p-3 rounded-lg border bg-purple-950/40 flex items-center justify-between cursor-pointer border-purple-800 ${sk.rarity ? sk.rarity.class : ''}`;
+            slot.innerHTML = `
+                <div>
+                    <div class="text-[10px] text-purple-400">装備中スキル</div>
+                    <div class="font-bold text-xs flex items-center gap-1">
+                        <i class="fa-solid ${sk.icon || 'fa-wand-magic-sparkles'}"></i>
+                        ${sk.name}
+                    </div>
+                </div>
+                ${item ? `<span class="text-[10px] text-red-400">外す</span>` : `<span class="text-[10px] text-slate-500">初期</span>`}
+            `;
+            slot.onclick = item ? () => {
+                player.inventory.push(item);
+                player.equipment.skill = null;
+                renderInventoryModal();
+            } : null;
+        }
+
         function equipItem(item) {
-            // Un-equip existing
             if (player.equipment[item.type]) {
                 player.inventory.push(player.equipment[item.type]);
             }
@@ -1207,7 +1288,7 @@
             player.level = 1;
             player.exp = 0;
             player.inventory = [];
-            player.equipment = { weapon: null, armor: null, accessory: null };
+            player.equipment = { weapon: null, armor: null, accessory: null, skill: null };
 
             generateDungeon();
             document.getElementById('screen-title').classList.add('hidden');
